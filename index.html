@@ -28,6 +28,7 @@ html,body{height:100%;margin:0;background:var(--bg);color:var(--fg);font-family:
 .btn:disabled{opacity:.45;cursor:default}
 .fr{text-align:right;line-height:1.35}
 #gline{display:none}
+#ld{background:none;border:0;padding:0;margin:0;font:inherit;color:inherit;letter-spacing:inherit;cursor:default}
 #help{position:fixed;right:18px;top:calc(14px + env(safe-area-inset-top,0px));z-index:6;display:flex;flex-direction:column;gap:10px;align-items:flex-end}
 .hb{position:relative}
 #q,#q2{width:30px;height:30px;border-radius:50%;border:1.5px solid var(--blue);background:none;color:var(--blue);font:600 15px 'Open Sans';cursor:pointer}
@@ -88,7 +89,7 @@ html,body{height:100%;margin:0;background:var(--bg);color:var(--fg);font-family:
 <div id="stage"><div id="board"></div></div>
 <div id="coll"><div class="grid" id="cg"></div></div>
 <div id="foot"><div id="tabs"><button class="on" data-v="p">Puzzle</button><button data-v="c">Collection</button></div>
-<div id="count">pieces <b id="n">0</b> / <span id="tot"></span></div><div class="fr"><div id="gline">all visitors: <b id="g" style="color:var(--blue)">0</b> pieces assembled</div><div>lotte damm, 2026</div></div></div>
+<div id="count">pieces <b id="n">0</b> / <span id="tot"></span></div><div class="fr"><div><button id="ld" type="button">lotte damm</button>, 2026</div><div id="gline">all visitors: <span id="g">0</span> pieces assembled</div></div></div>
 
 <div id="intro"><h1>just looking <span>O.o</span></h1><p>a puzzle about what "aesthetic" could mean</p><button class="btn" id="how">How to play</button></div>
 
@@ -128,13 +129,11 @@ const shuf=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.random()*(
 $('sl').innerHTML=SRC.map(s=>'<li>'+link(s)+'</li>').join('');
 $('tot').textContent=TOTAL;$('np').textContent=NP;
 $('charts').innerHTML=CH.map(c=>'<h3 style="font-size:16px;font-weight:700;margin:22px 0 6px">'+c[0]+'</h3>'+c[1].map(r=>'<div class="bar '+c[2]+'"><span>'+r[0]+'</span><i><b style="width:'+r[1]+'%"></b></i><em>'+r[1]+'%</em></div>').join('')).join('');
-$('title').onclick=()=>$('pos').classList.add('show');$('posx').onclick=()=>$('pos').classList.remove('show');
-let gdb=null,uid=null,myN=0;
-(async()=>{try{const c=window.claude;if(!c||!c.use)return;const u=await c.use('user'),d=await c.use('db');if(!d)return;
- uid=u?await u.id():null;gdb=d;
- d.collection('tally').onSnapshot(s=>{let tot=0;s.docs.forEach(x=>{const n=(x.data()||{}).n||0;tot+=n;if(x.id===uid&&n>myN)myN=n});$('g').textContent=tot;$('gline').style.display='block'},()=>{});
-}catch(e){}})();
-function tally(){myN++;try{if(gdb&&uid)gdb.collection('tally').doc(uid).set({n:myN}).catch(()=>{})}catch(e){}}
+$('title').onclick=()=>$('pos').classList.add('show');$('ld').onclick=$('title').onclick;$('posx').onclick=()=>$('pos').classList.remove('show');
+function setG(n){if(typeof n!=='number'||!isFinite(n))return;$('g').textContent=n.toLocaleString('en-US');$('gline').style.display='block'}
+async function gcount(m){try{const r=await fetch('/api/count',{method:m,cache:'no-store'});if(!r.ok)return;const d=await r.json();setG(d.count)}catch(e){}}
+gcount('GET');
+function tally(){gcount('POST')}
 let unlocked=[],done=0,Z=10,W,H,cw,ch,pad,bx,by,img=new Image(),pieces=[];
 
 function edge(c,ax,ay,bx_,by_,nx,ny,s){
