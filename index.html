@@ -131,9 +131,10 @@ $('tot').textContent=TOTAL;$('np').textContent=NP;
 $('charts').innerHTML=CH.map(c=>'<h3 style="font-size:16px;font-weight:700;margin:22px 0 6px">'+c[0]+'</h3>'+c[1].map(r=>'<div class="bar '+c[2]+'"><span>'+r[0]+'</span><i><b style="width:'+r[1]+'%"></b></i><em>'+r[1]+'%</em></div>').join('')).join('');
 $('title').onclick=()=>$('pos').classList.add('show');$('ld').onclick=$('title').onclick;$('posx').onclick=()=>$('pos').classList.remove('show');
 function setG(n){if(typeof n!=='number'||!isFinite(n))return;$('g').textContent=n.toLocaleString('en-US');$('gline').style.display='block'}
-async function gcount(m){try{const r=await fetch('/api/count',{method:m,cache:'no-store'});if(!r.ok)return;const d=await r.json();setG(d.count)}catch(e){}}
-gcount('GET');
-function tally(){gcount('POST')}
+const GU='https://abacus.jasoncameron.dev/';const GK='lotte-damm-just-looking/pieces';
+async function gcount(op){try{const r=await fetch(GU+op+'/'+GK,{cache:'no-store'});if(r.status===404)return setG(0);if(!r.ok)return;const d=await r.json();setG(d.value)}catch(e){}}
+gcount('get');
+function tally(){gcount('hit')}
 let unlocked=[],done=0,Z=10,W,H,cw,ch,pad,bx,by,img=new Image(),pieces=[];
 
 function edge(c,ax,ay,bx_,by_,nx,ny,s){
